@@ -23,6 +23,8 @@ import javax.speech.Central;
 import javax.speech.synthesis.Synthesizer;
 import javax.speech.synthesis.SynthesizerModeDesc;
 
+import edu.grinnell.csc207.util;
+
 /**
  * Creates a GUI that has a grid of images that represent the communication
  * device of the AAC.
