@@ -1,6 +1,9 @@
-import edu.grinnell.csc207.util;
+import java.util.NoSuchElementException;
+import edu.grinnell.csc207.util.*;
 import java.io.BufferedReader;
-import java.io.StringWriter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 
 /**
  * Creates a set of mappings of an AAC that has two levels,
@@ -10,14 +13,14 @@ import java.io.StringWriter;
  * and updating the set of images that would be shown and handling
  * an interactions.
  * 
- * @author Catie Baker & YOUR NAME HERE
+ * @author Catie Baker & Alyssa Ryan
  *
  */
 public class AACMappings implements AACPage {
 	
-	public static AssociativeArray<String, AACCategory> AACMap;
-	public static AssociativeArray<String, String> defCat;
-	public static AssociativeArray<String, String> current;
+	public AssociativeArray<String, AACCategory> AACMap;
+	public AACCategory defCat;
+	public AACCategory current;
 	
 
 	/**
@@ -39,27 +42,40 @@ public class AACMappings implements AACPage {
 	 * and food has french fries and watermelon and clothing has a 
 	 * collared shirt
 	 * @param filename the name of the file that stores the mapping information
+	 * @throws FileNotFoundException 
 	 */
-	public AACMappings(String filename) {
-		defCat.name = "";
+	public AACMappings(String filename) throws FileNotFoundException{		
+		AACMap = new AssociativeArray<String,AACCategory>();
+		defCat = new AACCategory("");
+		current = defCat;
 		
-		BufferedReader reader = new BufferedReader(new StringReader(filename));
+		BufferedReader reader = new BufferedReader(new FileReader(filename));
 		String line;
-		while (line = reader.nextLine() != null){
-			//Determines if the line is talking about an image or a category
-			String[] parts = line.split(" ");
-			if (line.charAt(0) == '>') {
-				String imageLoc = parts[0];
-				String itemName = parts[1];
-				current.addItem(imageLoc, itemName);
-			} else {
-				reset();
-				String catLoc = parts[0];
-				String catName = parts[1];
-				AACCategory newCat = new AACCategory(catName);
-				AACMap.addItem(catName, newCat);
-				current = newCat;
-			} //Add category or item to the aac
+		try {
+			while ((line = reader.readLine()) != null && line.isEmpty() == false){
+				//Determines if the line is talking about an image or a category
+				String[] parts = line.split(" ");
+				if (line.contains(">")) {
+					String imageLoc = parts[0].substring(1);
+					String itemName = parts[parts.length-1];
+					current.addItem(imageLoc, itemName);
+				} else {
+					reset();
+					String catLoc = parts[0];
+					String catName = parts[parts.length-1];
+					AACCategory newCat = new AACCategory(catName);
+					try {
+						AACMap.set(catLoc, newCat);
+					} catch (NullKeyException e) {
+
+					}
+					current = newCat;
+				} //Add category or item to the aac
+			}
+			reader.close();
+			reset();
+		} catch (IOException e) {
+			
 		}
 	}
 	
@@ -78,16 +94,28 @@ public class AACMappings implements AACPage {
 	 * category
 	 */
 	public String select(String imageLoc) {
-		if (current.hasKey(imageLoc) == false) {
-			throw NoSuchElementException;
-		} else if (current.key.equals("")) {
-			int index = AACMap.find(imageLoc);
-			current = pairs[index].value;
-			return "";
-		} else {
-			return current.get(imageLoc);
+		//If the imageLoc is for an image, it will have > at the beginning
+		String loc = ">" + imageLoc;
+		try{
+			if (AACMap.hasKey(imageLoc) == false && current.hasImage(loc) == false) {
+				throw new NoSuchElementException();
+			} else {
+				if(AACMap.hasKey(imageLoc) == true) {
+					//The imageLoc provided is in the current directory, and it is a category
+					int index = AACMap.find(imageLoc);
+					current = AACMap.returnVal(index);
+					return "";
+				} else if (current.hasImage(loc)) {
+					//The imageLoc provided is in the current directory, and it is an image
+					int index = current.category.find(imageLoc);
+					return current.category.returnVal(index);
+				} else {
+					return "";
+				}
+			}
+		} catch (Exception e) {
+			throw new NoSuchElementException();
 		}
-		return "";
 	}
 	
 	/**
@@ -96,7 +124,16 @@ public class AACMappings implements AACPage {
 	 * it should return an empty array
 	 */
 	public String[] getImageLocs() {
-		String[] imageLocs = current.getImageLocs();
+		String[] imageLocs;
+		if(current.name.equals("")){
+			imageLocs = new String[AACMap.size];
+			for(int i=0; i<AACMap.size; i++){
+				imageLocs[i] = AACMap.returnKey(i);
+			}
+		} else{
+			imageLocs = current.getImageLocs();
+		}
+		return imageLocs;
 	}
 	
 	/**
@@ -130,10 +167,10 @@ public class AACMappings implements AACPage {
 	 */
 	public void writeToFile(String filename) {
 		for(int i=0; i<AACMap.size; i++) {
-			filename = filename + AACMap.pairs[i].key + " " + AACMap.pairs[i].value.name + "\n";
-			current = AACMap.pairs[i].value;
-			for(int j = 0; j < AACMap.pairs[i].value.size; j++){
-				filename = filename + current.key + " " + current.value + "\n";
+			filename = filename + AACMap.returnKey(i) + " " + AACMap.returnVal(i).name + "\n";
+			current = AACMap.returnVal(i);
+			for(int j = 0; j < AACMap.returnVal(i).category.size; j++){
+				filename = filename + current.category.returnKey(j) + " " + current.category.returnVal(j) + "\n";
 			}
 		}
 	}
@@ -145,6 +182,7 @@ public class AACMappings implements AACPage {
 	 * @param text the text associated with the image
 	 */
 	public void addItem(String imageLoc, String text) {
+		imageLoc = ">" + imageLoc;
 		current.addItem(imageLoc, text);
 	}
 
@@ -167,6 +205,6 @@ public class AACMappings implements AACPage {
 	 * can be displayed, false otherwise
 	 */
 	public boolean hasImage(String imageLoc) {
-		return current.hasKey(imageLoc);
+		return current.category.hasKey(imageLoc);
 	}
 }
