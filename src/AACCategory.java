@@ -1,23 +1,24 @@
 import java.util.NoSuchElementException;
-import edu.grinnell.csc207.util;
+import edu.grinnell.csc207.util.*;
 
 /**
  * Represents the mappings for a single category of items that should
  * be displayed
  * 
- * @author Catie Baker & YOUR NAME HERE
+ * @author Catie Baker & Alyssa Ryan
  *
  */
 public class AACCategory implements AACPage {
 
-	public static String name;
-	public static AssociativeArray<String, String> category;
+	public String name;
+	public AssociativeArray<String, String> category;
 	
 	/**
 	 * Creates a new empty category with the given name
 	 * @param name the name of the category
 	 */
 	public AACCategory(String name) {
+		category = new AssociativeArray<String,String>();
 		this.name = name;
 	}
 	
@@ -26,8 +27,13 @@ public class AACCategory implements AACPage {
 	 * @param imageLoc the location of the image
 	 * @param text the text that image should speak
 	 */
-	public void addItem(String imageLoc, String text) {
-		category.set(imageLoc, text);
+	public void addItem(String imageLoc, String text){
+		imageLoc = ">" + imageLoc;
+		try{
+			category.set(imageLoc, text);
+		} catch (Exception e) {
+			
+		} //try/catch
 	}
 
 	/**
@@ -38,7 +44,7 @@ public class AACCategory implements AACPage {
 	public String[] getImageLocs() {
 		String[] locs = new String[category.size];
 		for(int i=0; i<category.size; i++){
-			locs[i] = category.pairs[i].key;
+			locs[i] = category.returnKey(i).substring(1);
 		}
 		return locs;
 	}
@@ -55,11 +61,18 @@ public class AACCategory implements AACPage {
 	 * Returns the text associated with the given image in this category
 	 * @param imageLoc the location of the image
 	 * @return the text associated with the image
+	 * @throws KeyNotFoundException 
 	 * @throws NoSuchElementException if the image provided is not in the current
 	 * 		   category
 	 */
-	public String select(String imageLoc) {
-		return "";
+	public String select(String imageLoc){
+		try{
+			imageLoc = ">" + imageLoc;
+			int index = category.find(imageLoc);
+			return category.returnVal(index);
+		} catch (Exception e) {
+			throw new NoSuchElementException();
+		}
 	}
 
 	/**
