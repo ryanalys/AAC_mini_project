@@ -199,12 +199,20 @@ public class AssociativeArray<K, V> {
     return this.size;
   } // size()
 
-  //Returns the key associated with the pair at index
+  /**
+   * Returns the key from the element at index
+   * @param index The index from which to get the key
+   * @return The key from the element at index
+   */
   public K returnKey(int index){
     return pairs[index].key;
   }
 
-  //Returns the value associated with the pair at index
+  /**
+   * Returns the value from the element at index
+   * @param index The index from which to get the value
+   * @return The value from the element at index
+   */
   public V returnVal(int index){
     return pairs[index].val;
   }
