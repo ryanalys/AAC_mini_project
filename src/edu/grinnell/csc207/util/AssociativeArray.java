@@ -1,4 +1,4 @@
-
+package edu.grinnell.csc207.util;
 
 import static java.lang.reflect.Array.newInstance;
 
@@ -30,12 +30,12 @@ public class AssociativeArray<K, V> {
   /**
    * The size of the associative array (the number of key/value pairs).
    */
-  int size;
+  public int size;
 
   /**
    * The array of key/value pairs.
    */
-  KVPair<K, V>[] pairs;
+  public KVPair<K, V>[] pairs;
 
   // +--------------+------------------------------------------------
   // | Constructors |
@@ -199,6 +199,16 @@ public class AssociativeArray<K, V> {
     return this.size;
   } // size()
 
+  //Returns the key associated with the pair at index
+  public K returnKey(int index){
+    return pairs[index].key;
+  }
+
+  //Returns the value associated with the pair at index
+  public V returnVal(int index){
+    return pairs[index].val;
+  }
+
   // +-----------------+---------------------------------------------
   // | Private Methods |
   // +-----------------+
@@ -223,7 +233,7 @@ public class AssociativeArray<K, V> {
    * @throws KeyNotFoundException
    *   If the key does not appear in the associative array.
    */
-  int find(K key) throws KeyNotFoundException {
+  public int find(K key) throws KeyNotFoundException {
     for (int i = 0; i < this.size; i++) {
       if (this.pairs[i].key.equals(key)) {
         return i;

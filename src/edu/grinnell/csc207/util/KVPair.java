@@ -1,4 +1,4 @@
-
+package edu.grinnell.csc207.util;
 
 /**
  * An easy way to store key/value pairs.  We assume that other
@@ -17,12 +17,12 @@ class KVPair<K, V> {
   /**
    * The key.
    */
-  K key;
+  public K key;
 
   /**
    * The value.
    */
-  V val;
+  public V val;
 
   // +--------------+------------------------------------------------
   // | Constructors |
