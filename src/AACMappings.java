@@ -57,7 +57,10 @@ public class AACMappings implements AACPage {
 				String[] parts = line.split(" ");
 				if (line.contains(">")) {
 					String imageLoc = parts[0].substring(1);
-					String itemName = parts[parts.length-1];
+					String itemName = parts[1];
+					for (int i=2; i<parts.length; i++){
+						itemName = itemName + " " + parts[i];
+					}
 					current.addItem(imageLoc, itemName);
 				} else {
 					reset();
@@ -97,20 +100,21 @@ public class AACMappings implements AACPage {
 		//If the imageLoc is for an image, it will have > at the beginning
 		String loc = ">" + imageLoc;
 		try{
-			if (AACMap.hasKey(imageLoc) == false && current.hasImage(loc) == false) {
+			if (AACMap.hasKey(imageLoc) == false && current.category.hasKey(loc) == false) {
 				throw new NoSuchElementException();
 			} else {
-				if(AACMap.hasKey(imageLoc) == true) {
-					//The imageLoc provided is in the current directory, and it is a category
+				if(AACMap.hasKey(imageLoc) == true && current.name == "") {
+					//We are in the home directory, and the imageLoc provided is a valid category
 					int index = AACMap.find(imageLoc);
 					current = AACMap.returnVal(index);
 					return "";
-				} else if (current.hasImage(loc)) {
+				} else if (current.category.hasKey(loc)) {
 					//The imageLoc provided is in the current directory, and it is an image
-					int index = current.category.find(imageLoc);
+					int index = current.category.find(loc);
 					return current.category.returnVal(index);
 				} else {
-					return "";
+					//The imageLoc provided is not valid in our current directory
+					throw new NoSuchElementException();
 				}
 			}
 		} catch (Exception e) {
@@ -126,9 +130,14 @@ public class AACMappings implements AACPage {
 	public String[] getImageLocs() {
 		String[] imageLocs;
 		if(current.name.equals("")){
-			imageLocs = new String[AACMap.size];
+			imageLocs = new String[AACMap.size + defCat.category.size];
 			for(int i=0; i<AACMap.size; i++){
 				imageLocs[i] = AACMap.returnKey(i);
+			}
+			String[] addons = defCat.getImageLocs();
+			for(int j=AACMap.size; j<AACMap.size+defCat.category.size; j++){
+				
+				imageLocs[j] = addons[j - AACMap.size];
 			}
 		} else{
 			imageLocs = current.getImageLocs();
@@ -182,8 +191,16 @@ public class AACMappings implements AACPage {
 	 * @param text the text associated with the image
 	 */
 	public void addItem(String imageLoc, String text) {
-		imageLoc = ">" + imageLoc;
-		current.addItem(imageLoc, text);
+		if(current.name.equals("")){
+			AACCategory newCat = new AACCategory(text);
+				try {
+					AACMap.set(imageLoc, newCat);
+				} catch (NullKeyException e) {
+
+				}
+		} else {
+			current.addItem(imageLoc, text);
+		}
 	}
 
 
